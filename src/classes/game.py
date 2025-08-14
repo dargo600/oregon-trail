@@ -6,9 +6,9 @@ from classes.utils import tab, get_user_input
 # IDENTIFICATION OF VARIABLES IN THE PROGRAM^*
 # t.oxen             A  = AMOUNT SPENT ON ANIMALS
 # t.ammo             B  = AMOUNT SPENT ON AMMUNITION
-# g.response         B1 = ACTUAL RESPONSE TIME FOR INPUTTING "BANG"
-# g.start            B3 = CLOCK TIME AT START OF INPUTTING "BANG"
-# t.clothing         C  = AMOUNT SPENT ON CLOTHING
+#                    B1 = ACTUAL RESPONSE TIME FOR INPUTTING "BANG"
+#                    B3 = CLOCK TIME AT START OF INPUTTING "BANG"
+# t.clothes          C  = AMOUNT SPENT ON CLOTHING
 # t.need_clothes     C1 = FLAG FOR INSUFFICIENT CLOTHING IN COLD WEATHER
 #                    C$ = YES/NO RESPONSE TO QUESTIONS
 #                    D1 = COUNTER IN GENERATING EVENTS
@@ -16,7 +16,7 @@ from classes.utils import tab, get_user_input
 #                    D4 = CURRENT DATE
 # t.gun_skill        D9 = CHOICE OF SHOOTING EXPERTISE LEVEL
 #                    E  = CHOICE OF EATING
-#                    F  = AMOUNT SPENT ON FOOD
+# t.food             F  = AMOUNT SPENT ON FOOD
 # t.done_sth_pass    F1 = FLAG FOR CLEARING SOUTH PASS
 # t.done_blue_mnts   F2 = FLAG FOR CLEARING BLUE MOUNTAINS
 #                    F9 = FRACTION OF 2 WEEKS TRAVELED ON FINAL TURN
@@ -156,6 +156,7 @@ class Game:
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON MISCELLANEOUS SUPPLIES?  >"
         misc = get_user_input(prompt, 0, cash)
+        ammo *= 50 # 1170 $1 per bullet
         self.traveller = Traveller(shooting_skill, oxen, food, ammo, clothing, misc, cash)
         print(f"AFTER ALL YOUR PURCHASES, YOU NOW HAVE ${cash} LEFT.")
         print("\nMONDAY MARCH 29 1847")
