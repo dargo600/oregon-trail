@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""
+The Main module that starts the Game Class
+"""
 import sys
 from classes.game import Game
 

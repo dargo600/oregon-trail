@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+The main Game Module
+"""
+
 from classes.traveller import Traveller
 from classes.utils import tab, get_user_input
 
@@ -74,7 +78,7 @@ class Game:
     MIN_OXEN_AMOUNT = 200
     MAX_OXEN_AMOUNT= 300
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.done_sth_pass = False
         self.done_blue_mnts = False
         self.sth_pass_miles = False
@@ -83,7 +87,7 @@ class Game:
         self.prev_turn_miles = 0
         self.fort_exists = False
 
-    def introduction(self):
+    def introduction(self) -> None:
         # 240 - 680
         print("PROGRAM SIMULATES A TRIP OVER THE OREGON TRAIL FROM")
         print("INDEPENDENCE, MISSOURI TO OREGON CITY, OREGON IN 1847.")
@@ -131,17 +135,17 @@ class Game:
         print("GOOD LUCK!\n\n")
 
     # Lines 700- X1, K5, S4, F1, F2, M, M9, D3
-    def initial_setup(self):
+    def initial_setup(self) -> None:
         prompt = "HOW GOOD A SHOT ARE YOU WITH YOUR RIFLE?"
         prompt += "\n  (1) ACE MARKSMAN, (2) GOOD SHOT, (3) FAIR TO MIDDLIN'"
         prompt += "\n  (4) NEED MORE PRACTICE, (5) SHAKY KNEES>\n"
         shooting_skill = input(prompt)
         cash = 700
- 
+
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM?  >"
         oxen = get_user_input(prompt, self.MIN_OXEN_AMOUNT, self.MAX_OXEN_AMOUNT)
         cash = cash - oxen
- 
+
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON FOOD?  >"
         food = get_user_input(prompt, 0, cash)
         cash = cash - food
@@ -162,18 +166,18 @@ class Game:
         print("\nMONDAY MARCH 29 1847")
 
 
-    def conclusion(self):
+    def conclusion(self) -> None:
         print("CONGRATULATIONS! YOU'VE MADE IT TO OREGON CITY!")
 
-    def do_final_turn(self):
+    def do_final_turn(self) -> None:
         print("YOU HAVE BEEN ON THE TRAIL TOO LONG ------")
         print("YOUR FAMILY DIES IN THE FIRST BLIZZARD OF WINTER")
 
-    def is_final_turn(self, miles, max_miles):
+    def is_final_turn(self, miles, max_miles) -> None:
         if miles >= max_miles:
             self.do_final_turn()
 
-    def get_date(self, current_turn):
+    def get_date(self, current_turn) -> None:
         if self.miles >= self.MAX_MILES:
             self.do_final_turn()
             return
@@ -181,7 +185,7 @@ class Game:
             print(f"\n{weekdays[0]} {dates[current_turn]} 1847")
 
 
-    def request_action(self):
+    def request_action(self) -> None:
         if self.fort_exists:
             while True:
                 prompt = "DO YOU WANT TO (1) STOP AT THE NEXT FORT, (2) HUNT,"
@@ -202,11 +206,11 @@ class Game:
                 if action == 1:
                     result = self.traveller.hunt()
                     if result:
-                        break 
+                        break
                 else:
                     self.traveller.travel()
 
-    def handle_turn(self):
+    def handle_turn(self) -> bool:
         if not self.traveller.check():
             return False
         if not self.sth_pass_miles:
@@ -219,7 +223,7 @@ class Game:
             return False
         return True
 
-    def handle_death(self):
+    def handle_death(self) -> None:
         print("DUE TO YOUR UNFORTUNATE SITUATION, THERE ARE FEW")
         print("FORMALITIES WE MUST GO THROUGH")
         question = "\nWOULD YOU LIKE A MINISTER?"
