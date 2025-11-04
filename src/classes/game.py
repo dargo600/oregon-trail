@@ -4,8 +4,10 @@
 The main Game Module
 """
 
+from dataclasses import dataclass
 from classes.traveller import Traveller
-from classes.utils import tab, get_user_input
+from classes.ui import UI
+from classes.utils import tab
 
 # IDENTIFICATION OF VARIABLES IN THE PROGRAM^*
 # t.oxen             A  = AMOUNT SPENT ON ANIMALS
@@ -73,105 +75,108 @@ weekdays = [
     "FRIDAY"
 ]
 
-class Game:
-    MAX_MILES = 2040
-    MIN_OXEN_AMOUNT = 200
-    MAX_OXEN_AMOUNT= 300
+# Lines 240 - 680
+INTRO_STR: str = """PROGRAM SIMULATES A TRIP OVER THE OREGON TRAIL FROM
+INDEPENDENCE, MISSOURI TO OREGON CITY, OREGON IN 1847.
+YOUR FAMILY OF FIVE WILL COVER THE 2040-MILE OREGON TRAIL
+IN 5-6 MONTHS --- IF YOU MAKE IT ALIVE.
 
-    def __init__(self) -> None:
-        self.done_sth_pass = False
-        self.done_blue_mnts = False
-        self.sth_pass_miles = False
-        self.current_turn = 0
-        self.miles = 0
-        self.prev_turn_miles = 0
-        self.fort_exists = False
+YOU HAD $900 TO SPEND ON SUPPLIES, BUT YOU'VE JUST
+    PAID $200 FOR A WAGON, LEAVING YOU WITH $700.
+YOU WILL NEED TO SPEND THE REST OF YOUR MONEY ON THE
+FOLLOWING ITEMS:
+
+    OXEN - YOU CAN SPEND $200-$300 ON YOUR TEAM
+            THE MORE YOU SPEND, THE FASTER YOU'LL GO
+            BECAUSE YOU'LL HAVE BETTER ANIMALS
+
+    FOOD - THE MORE YOU HAVE, THE LESS CHANCE THERE
+            IS OF GETTING SICK
+
+    AMMUNITION - $1 BUYS A BELT OF 50 BULLETS
+                    YOU WILL NEED BULLETS FOR ATTACKS BY ANIMALS
+                    AND BANDITS, AND FOR HUNTING FOOD
+
+    CLOTHING - THIS IS ESPECIALLY IMPORTANT FOR THE COLD
+                WEATHER YOU WILL ENCOUNTER WHEN CROSSING
+                THE MOUNTAINS
+
+    MISCELLANEOUS SUPPLIES - THIS INCLUDES MEDICINE AND
+        OTHER THINGS YOU WILL NEED FOR SICKNESS
+        AND EMERGENCY REPAIRS
+
+YOU CAN SPEND ALL YOUR MONEY BEFORE YOU START YOUR TRIP -
+OR YOU CAN SAVE SOME OF YOUR CASH TO SPEND AT FORTS ALONG
+THE WAY WHEN YOU RUN LOW. HOWEVER, ITEMS COST MORE AT
+THE FORTS. YOU CAN ALSO GO HUNTING ALONG THE WAY TO GET
+MORE FOOD.
+WHENEVER YOU HAVE TO USE YOUR TRUSTY RIFLE ALONG THE WAY,
+YOU WILL BE TOLD TO TYPE IN THAT WORD (ONE THAT SOUNDS LIKE A
+GUN SHOT). THE FASTER YOU TYPE IN THAT WORD AND HIT THE
+RETURN KEY, THE BETTER LUCK YOU'LL HAVE WITH YOUR GUN.\n
+
+AT EACH TURN, ALL ITEMS ARE SHOWN IN DOLLAR AMOUNTS
+EXCEPT BULLETS
+WHEN ASKED TO ENTER MONEY AMOUNTS, DON'T USE A \"$\".
+GOOD LUCK!\n\n"""
+
+
+@dataclass
+class Game:
+    """ Class for keeping track of Game progress """
+    MAX_MILES: int = 2040
+    MIN_OXEN_AMOUNT: int = 200
+    MAX_OXEN_AMOUNT: int = 300
+    done_sth_pass: bool = False
+    done_blue_mnts: bool = False
+    sth_pass_miles: bool = False
+    current_turn: int = 0
+    miles: int = 0
+    prev_turn_miles: int = 0
+    fort_exists: bool = False
+    ui: UI = None
 
     def introduction(self) -> None:
         # 240 - 680
-        print("PROGRAM SIMULATES A TRIP OVER THE OREGON TRAIL FROM")
-        print("INDEPENDENCE, MISSOURI TO OREGON CITY, OREGON IN 1847.")
-        print("YOUR FAMILY OF FIVE WILL COVER THE 2040-MILE OREGON TRAIL")
-        print("IN 5-6 MONTHS --- IF YOU MAKE IT ALIVE.")
-        print("")
-        print("YOU HAD $900 TO SPEND ON SUPPLIES, BUT YOU'VE JUST")
-        print("  PAID $200 FOR A WAGON, LEAVING YOU WITH $700.")
-        print("YOU WILL NEED TO SPEND THE REST OF YOUR MONEY ON THE")
-        print("   FOLLOWING ITEMS:")
-        print("")
-        print("     OXEN - YOU CAN SPEND $200-$300 ON YOUR TEAM")
-        print("            THE MORE YOU SPEND, THE FASTER YOU'LL GO")
-        print("               BECAUSE YOU'LL HAVE BETTER ANIMALS")
-        print("")
-        print("     FOOD - THE MORE YOU HAVE, THE LESS CHANCE THERE")
-        print("               IS OF GETTING SICK")
-        print("")
-        print("     AMMUNITION - $1 BUYS A BELT OF 50 BULLETS")
-        print("            YOU WILL NEED BULLETS FOR ATTACKS BY ANIMALS")
-        print("               AND BANDITS, AND FOR HUNTING FOOD")
-        print("")
-        print("     CLOTHING - THIS IS ESPECIALLY IMPORTANT FOR THE COLD")
-        print("               WEATHER YOU WILL ENCOUNTER WHEN CROSSING")
-        print("               THE MOUNTAINS")
-        print("")
-        print("     MISCELLANEOUS SUPPLIES - THIS INCLUDES MEDICINE AND")
-        print("              OTHER THINGS YOU WILL NEED FOR SICKNESS")
-        print("              AND EMERGENCY REPAIRS")
-        print("")
-        print("")
-        print("YOU CAN SPEND ALL YOUR MONEY BEFORE YOU START YOUR TRIP -")
-        print("OR YOU CAN SAVE SOME OF YOUR CASH TO SPEND AT FORTS ALONG")
-        print("THE WAY WHEN YOU RUN LOW. HOWEVER, ITEMS COST MORE AT")
-        print("THE FORTS. YOU CAN ALSO GO HUNTING ALONG THE WAY TO GET")
-        print("MORE FOOD.")
-        print("WHENEVER YOU HAVE TO USE YOUR TRUSTY RIFLE ALONG THE WAY,")
-        print("YOU WILL BE TOLD TO TYPE IN THAT WORD (ONE THAT SOUNDS LIKE A")
-        print("GUN SHOT). THE FASTER YOU TYPE IN THAT WORD AND HIT THE")
-        print("RETURN KEY, THE BETTER LUCK YOU'LL HAVE WITH YOUR GUN.\n")
-        print("")
-        print("AT EACH TURN, ALL ITEMS ARE SHOWN IN DOLLAR AMOUNTS")
-        print("EXCEPT BULLETS")
-        print("WHEN ASKED TO ENTER MONEY AMOUNTS, DON'T USE A \"$\".")
-        print("GOOD LUCK!\n\n")
-
-    # Lines 700- X1, K5, S4, F1, F2, M, M9, D3
-    def initial_setup(self) -> None:
+        self.ui.display(INTRO_STR)
         prompt = "HOW GOOD A SHOT ARE YOU WITH YOUR RIFLE?"
         prompt += "\n  (1) ACE MARKSMAN, (2) GOOD SHOT, (3) FAIR TO MIDDLIN'"
         prompt += "\n  (4) NEED MORE PRACTICE, (5) SHAKY KNEES>\n"
-        shooting_skill = input(prompt)
+        gun_skill = self.ui.get_user_input(prompt, 1, 5)
         cash = 700
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM?  >"
-        oxen = get_user_input(prompt, self.MIN_OXEN_AMOUNT, self.MAX_OXEN_AMOUNT)
+        oxen = self.ui.get_user_input(prompt, self.MIN_OXEN_AMOUNT,
+                                      self.MAX_OXEN_AMOUNT)
         cash = cash - oxen
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON FOOD?  >"
-        food = get_user_input(prompt, 0, cash)
+        food = self.ui.get_user_input(prompt, 0, cash)
         cash = cash - food
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON AMMUNITION?  >"
-        ammo = get_user_input(prompt, 0, cash)
+        ammo = self.ui.get_user_input(prompt, 0, cash)
         cash = cash - ammo
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON CLOTHING?  >"
-        clothing = get_user_input(prompt, 0, cash)
-        cash = cash - clothing
+        clothes = self.ui.get_user_input(prompt, 0, cash)
+        cash = cash - clothes
 
         prompt = "HOW MUCH DO YOU WANT TO SPEND ON MISCELLANEOUS SUPPLIES?  >"
-        misc = get_user_input(prompt, 0, cash)
-        ammo *= 50 # 1170 $1 per bullet
-        self.traveller = Traveller(shooting_skill, oxen, food, ammo, clothing, misc, cash)
+        misc = self.ui.get_user_input(prompt, 0, cash)
+        ammo *= 50  # 1170 $1 per bullet
+        self.traveller = Traveller(gun_skill=gun_skill, oxen=oxen, food=food,
+                                   ammo=ammo, clothes=clothes, misc=misc,
+                                   cash=cash, ui=self.ui)
         print(f"AFTER ALL YOUR PURCHASES, YOU NOW HAVE ${cash} LEFT.")
         print("\nMONDAY MARCH 29 1847")
 
-
     def conclusion(self) -> None:
-        print("CONGRATULATIONS! YOU'VE MADE IT TO OREGON CITY!")
+        self.ui.display("CONGRATULATIONS! YOU'VE MADE IT TO OREGON CITY!")
 
     def do_final_turn(self) -> None:
-        print("YOU HAVE BEEN ON THE TRAIL TOO LONG ------")
-        print("YOUR FAMILY DIES IN THE FIRST BLIZZARD OF WINTER")
+        self.ui.display("YOU HAVE BEEN ON THE TRAIL TOO LONG ------")
+        self.ui.display("YOUR FAMILY DIES IN THE FIRST BLIZZARD OF WINTER")
 
     def is_final_turn(self, miles, max_miles) -> None:
         if miles >= max_miles:
@@ -182,7 +187,7 @@ class Game:
             self.do_final_turn()
             return
         if current_turn < len(self.dates):
-            print(f"\n{weekdays[0]} {dates[current_turn]} 1847")
+            self.ui.display(f"\n{weekdays[0]} {dates[current_turn]} 1847")
 
 
     def request_action(self) -> None:
@@ -190,7 +195,7 @@ class Game:
             while True:
                 prompt = "DO YOU WANT TO (1) STOP AT THE NEXT FORT, (2) HUNT,"
                 prompt += "\n (3) CONTINUE"
-                action = get_user_input(prompt, 1, 3)
+                action = self.ui.get_user_input(prompt, 1, 3)
                 if action == 1:
                     self.traveller.visit_fort()
                 elif  action == 2:
@@ -202,7 +207,7 @@ class Game:
         else:
             while True:
                 prompt = "DO YOU WANT TO (1) HUNT OR (2) CONTINUE"
-                action = get_user_input(prompt, 1, 2)
+                action = self.ui.get_user_input(prompt, 1, 2)
                 if action == 1:
                     result = self.traveller.hunt()
                     if result:
@@ -214,32 +219,17 @@ class Game:
         if not self.traveller.check():
             return False
         if not self.sth_pass_miles:
-            print(f"TOTAL MILEAGE IS {self.miles}")
+            self.ui.display(f"TOTAL MILEAGE IS {self.miles}")
         else:
-            print("TOTAL MILEAGE IS 950")
+            self.ui.display("TOTAL MILEAGE IS 950")
             self.south_pass_flag_updated_mileage = False
         self.traveller.show_stats()
         if not self.request_action():
             return False
         return True
 
+
     def handle_death(self) -> None:
-        print("DUE TO YOUR UNFORTUNATE SITUATION, THERE ARE FEW")
-        print("FORMALITIES WE MUST GO THROUGH")
-        question = "\nWOULD YOU LIKE A MINISTER?"
-        answer = input(question)
-        question = "\nWOULD YOU LIKE A FANCY FUNERAL?"
-        answer = input(question)
-        question = "\nWOULD YOU LIKE US TO INFORM YOUR NEXT OF KIN?"
-        answer = input(question)
-        if answer == "NO":
-            print("BUT YOUR AUNT SADIE IN ST. LOUIS IS REALLY WORRIED ABOUT YOU")
-        else:
-            print("THAT WILL BE $50 FOR THE TELEGRAPH CHARGE.")
-        print("WE THANK YOU FOR THIS INFORMATION AND WE ARE SORRY YOU")
-        print("DIDN'T MAKE IT TO THE GREAT TERRITORY OF OREGON")
-        print("BETTER LUCK NEXT TIME")
-        print("")
-        print(tab(30) + "SINCERELY")
-        print(tab(17) + "THE OREGON CITY CHAMBER OF COMMERCE")
+        self.ui.handle_death()
+
 
